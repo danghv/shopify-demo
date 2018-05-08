@@ -1,4 +1,4 @@
-import React, { Component} from 'react';
+import React, { Component } from 'react';
 import { connect } from 'react-redux';
 
 import { Layout, Stack, Card, TextField, Button } from '@shopify/polaris';
@@ -8,13 +8,14 @@ import { updatePath, updateParams, sendRequest } from '../actions';
 import VerbPicker from './VerbPicker';
 
 class ApiConsole extends Component {
+
   render() {
     return (
       <Layout sectioned>
-        { this.renderForm() }
-        { this.renderResponse() }
+        {this.renderForm()}
+        {this.renderResponse()}
       </Layout>
-    )
+    );
   }
 
   renderForm() {
@@ -29,15 +30,28 @@ class ApiConsole extends Component {
               value={requestFields.path}
               onChange={path => dispatch(updatePath(path))}
             />
-            <Button primary onClick={() => dispatch(sendRequest(requestFields))}>
+            <Button
+              primary
+              onClick={() => dispatch(sendRequest(requestFields))}
+            >
               Send
             </Button>
+            <Button
+              primary
+            >
+              Shop Information
+            </Button>
+              <Button
+                  primary
+              >
+                  Products List
+              </Button>
           </Stack>
         </Layout.Section>
 
         {this.renderParams()}
       </div>
-    )
+    );
   }
 
   renderParams() {
@@ -67,24 +81,23 @@ class ApiConsole extends Component {
     }
 
     if (requestInProgress) {
-      return (
-        <Layout.Section>
-          'requesting...';
-        </Layout.Section>
-      )
+      return <Layout.Section>'requesting...';</Layout.Section>;
     }
 
-    const data = JSON.parse(responseBody)
+    const data = JSON.parse(responseBody);
 
     return (
       <Layout.Section>
         <Card>
-          <div style={{margin: '15px 15px'}}>
-            <ObjectInspector data={data} initialExpandedPaths={['root', 'root.*']}/>
+          <div style={{ margin: '15px 15px' }}>
+            <ObjectInspector
+              data={data}
+              initialExpandedPaths={['root', 'root.*']}
+            />
           </div>
         </Card>
       </Layout.Section>
-    )
+    );
   }
 }
 

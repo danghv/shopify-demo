@@ -5,14 +5,18 @@ import logger from 'redux-logger';
 const requestFields = {
   verb: 'POST',
   path: '/products.json',
-  params: JSON.stringify({
-    product: {
-      title: "Burton Custom Freestyle 151",
-      body_html: "<strong>Good snowboard!<\/strong>",
-      vendor: "Burton",
-      product_type: "Snowboard"
-    }
-  }, null, 2)
+  params: JSON.stringify(
+    {
+      product: {
+        title: 'Burton Custom Freestyle 151',
+        body_html: '<strong>Good snowboard!</strong>',
+        vendor: 'Burton',
+        product_type: 'Snowboard',
+      },
+    },
+    null,
+    2
+  ),
 };
 
 const initState = {
@@ -56,14 +60,14 @@ function reducer(state = initState, action) {
         ...state,
         requestInProgress: true,
         requestError: null,
-        responseBody: ''
+        responseBody: '',
       };
     case 'REQUEST_COMPLETE':
       return {
         ...state,
         requestInProgress: false,
         requestError: null,
-        responseBody: action.payload.responseBody
+        responseBody: action.payload.responseBody,
       };
     case 'REQUEST_ERROR':
       return {

@@ -31,14 +31,14 @@ export function sendRequest(requestFields) {
   const fetchOptions = {
     method: verb,
     headers: {
-      'Accept': 'application/json',
-      'Content-Type': 'application/json'
+      Accept: 'application/json',
+      'Content-Type': 'application/json',
     },
     credentials: 'include',
-  }
+  };
 
   if (verb !== 'GET') {
-    fetchOptions['body'] = params
+    fetchOptions['body'] = params;
   }
 
   return dispatch => {
@@ -66,7 +66,7 @@ function requestCompleteAction(json) {
   return {
     type: 'REQUEST_COMPLETE',
     payload: {
-      responseBody
+      responseBody,
     },
   };
 }

@@ -15,7 +15,9 @@ const config = require('../config/webpack.config.js');
 
 const ShopifyAPIClient = require('shopify-api-node');
 const ShopifyExpress = require('@shopify/shopify-express');
-const {MemoryStrategy} = require('@shopify/shopify-express/strategies');
+const { MemoryStrategy } = require('@shopify/shopify-express/strategies');
+const request = require('request-promise')
+const bodyParser = require('body-parser')
 
 const {
   SHOPIFY_APP_KEY,
@@ -36,7 +38,7 @@ const shopifyConfig = {
     registerWebhook(shop, accessToken, {
       topic: 'orders/create',
       address: `${SHOPIFY_APP_HOST}/order-create`,
-      format: 'json'
+      format: 'json',
     });
 
     return response.redirect('/');
@@ -44,18 +46,34 @@ const shopifyConfig = {
 };
 
 const registerWebhook = function(shopDomain, accessToken, webhook) {
-  const shopify = new ShopifyAPIClient({ shopName: shopDomain, accessToken: accessToken });
-  shopify.webhook.create(webhook).then(
-    response => console.log(`webhook '${webhook.topic}' created`),
-    err => console.log(`Error creating webhook '${webhook.topic}'. ${JSON.stringify(err.response.body)}`)
-  );
-}
+  const shopify = new ShopifyAPIClient({
+    shopName: shopDomain,
+    accessToken: accessToken,
+  });
+  shopify.webhook
+    .create(webhook)
+    .then(
+      response => console.log(`webhook '${webhook.topic}' created:...${response}`),
+      err =>
+        console.log(
+          `Error creating webhook '${webhook.topic}'. ${JSON.stringify(
+            err.response.body
+          )}`
+        )
+    );
+};
 
 const app = express();
 const isDevelopment = NODE_ENV !== 'production';
 
 app.set('views', path.join(__dirname, 'views'));
 app.set('view engine', 'ejs');
+
+// parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }))
+// parse application/json
+app.use(bodyParser.json())
+
 app.use(logger('dev'));
 app.use(
   session({
@@ -98,31 +116,87 @@ app.get('/install', (req, res) => res.render('install'));
 const shopify = ShopifyExpress(shopifyConfig);
 
 // Mount Shopify Routes
-const {routes, middleware} = shopify;
-const {withShop, withWebhook} = middleware;
+const { routes, middleware } = shopify;
+const { withShop, withWebhook } = middleware;
 
 app.use('/shopify', routes);
 
 // Client
-app.get('/', withShop({authBaseUrl: '/shopify'}), function(request, response) {
+app.get('/', withShop({ authBaseUrl: '/shopify' }), function(request, response) {
   const { session: { shop, accessToken } } = request;
+  console.log('request', request.session.accessToken)
   response.render('app', {
     title: 'Shopify Node App',
     apiKey: shopifyConfig.apiKey,
     shop: shop,
-  });
-});
+    accessToken: request.session.accessToken
+  })
+})
 
-app.post('/order-create', withWebhook((error, request) => {
-  if (error) {
-    console.error(error);
-    return;
+app.post(
+  '/order-create',
+  withWebhook((error, request) => {
+    if (error) {
+      console.error(error);
+      return;
+    }
+
+    console.log('We got a webhook!');
+    console.log('Details: ', request.webhook);
+    console.log('Body:', request.body);
+  })
+);
+
+app.get('/api/shoppp', withShop({ authBaseUrl: '/shopify' }), (req, res) => {
+  const { session: { shop, accessToken } } = req
+  console.log('request', req.session.accessToken)
+  request.get(`https://${shop}/admin/shop.json`, { headers: {'X-Shopify-Access-Token': accessToken} })
+    .then(result => res.send(result))
+
+})
+
+app.get('/api/productsss', withShop({ authBaseUrl: '/shopify' }), (req, res) => {
+  const { session: { shop, accessToken } } = req
+  request.get(`https://${shop}/admin/products.json`, { headers: {'X-Shopify-Access-Token': accessToken} })
+    .then(result => res.send(result))
+
+})
+
+app.post('/api/add_product', withShop({ authBaseUrl: '/shopify' }), (req, res) => {
+  console.log('request body:...', req.body)
+  const { session: { shop, accessToken } } = req
+  // request.post(`https://${shop}/admin/products.json`, { headers: {'X-Shopify-Access-Token': accessToken} })
+  //   .then(result => res.send(result))
+  const options = {
+    method: 'POST',
+    uri: `https://${shop}/admin/products.json`,
+    body: {
+      product: {
+        title: "Burton Custom Freestyle 151",
+        body_html: "<strong>Good snowboard!</strong>",
+        vendor: "Burton",
+        product_type: "Snowboard",
+        tags: "Barnes & Noble, John's Fav, \"Big Air\""
+      }
+    },
+    json: true, // Automatically stringifies the body to JSON,
+    headers: {'X-Shopify-Access-Token': accessToken,}
   }
 
-  console.log('We got a webhook!');
-  console.log('Details: ', request.webhook);
-  console.log('Body:', request.body);
-}));
+  request(options)
+    .then(function (parsedBody) {
+      // POST succeeded...
+      console.log('result...', parsedBody)
+    })
+    .catch(function (err) {
+      // POST failed...
+      console.log('error', err)
+    });
+  // request.post(`https://${shop}/admin/products.json`, (req, res) => {
+  //
+  // })
+
+})
 
 // Error Handlers
 app.use(function(req, res, next) {

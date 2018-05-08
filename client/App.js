@@ -1,8 +1,6 @@
-import React, { Component} from 'react';
-import { Page } from '@shopify/polaris';
+import React, { Component } from 'react';
 import { EmbeddedApp } from '@shopify/polaris/embedded';
-
-import ApiConsole from './components/ApiConsole'
+import MyApp from './components/MyApp'
 
 class App extends Component {
   render() {
@@ -10,13 +8,7 @@ class App extends Component {
 
     return (
       <EmbeddedApp shopOrigin={shopOrigin} apiKey={apiKey}>
-        <Page
-          title="My application"
-          breadcrumbs={[{ content: 'Home', url: '/foo' }]}
-          primaryAction={{ content: 'Add something' }}
-        >
-          <ApiConsole />
-        </Page>
+        <MyApp />
       </EmbeddedApp>
     );
   }

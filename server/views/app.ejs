@@ -11,7 +11,7 @@
     <script>
       window.apiKey = "<%= apiKey %>"
       window.shopOrigin = "https://<%= shop %>"
-
+      window.accessToken = "<%= accessToken %>"
       const shopifyAppConfig = {
         apiKey: window.apiKey,
         shopOrigin: window.shopOrigin,
@@ -26,7 +26,7 @@
         shopifyAppConfig.forceRedirect = false;
       }
 
-      ShopifyApp.init(shopifyAppConfig);
+      ShopifyApp.init(shopifyAppConfig)
     </script>
 
     <div id="root"></div>
